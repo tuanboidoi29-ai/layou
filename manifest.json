@@ -1,0 +1,7 @@
+{
+  "name": "TT - Layout PRO",
+  "version": "1.0.0",
+  "channel": "stable",
+  "download_url": "https://github.com/tuanboidoi29-ai/layou/releases/latest/download/TT-Layout-PRO-1.0.0.rbz",
+  "notes": "Bản nền: loader SketchupExtension, lazy-load, menu/icon, callback Ruby và updater GitHub."
+}
