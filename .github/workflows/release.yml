@@ -1,0 +1,49 @@
+name: Build and Release RBZ
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(grep -m1 'VERSION = ' TT-Layout-PRO.rb | sed -E 's/.*"([0-9.]+)".*/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag and version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "Tag $TAG_VERSION != plugin version ${{ steps.version.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Build RBZ
+        shell: bash
+        run: |
+          mkdir -p build
+          zip -r "build/TT-Layout-PRO-${{ steps.version.outputs.version }}.rbz" TT-Layout-PRO.rb tt_layout_pro manifest.json
+          test -s "build/TT-Layout-PRO-${{ steps.version.outputs.version }}.rbz"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "build/TT-Layout-PRO-${{ steps.version.outputs.version }}.rbz" \
+            --title "TT - Layout PRO ${{ steps.version.outputs.version }}" \
+            --generate-notes
